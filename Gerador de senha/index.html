@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>qualitysenha - Gerador de Senha Horária</title>
+    <!-- Carrega Tailwind CSS para estilização moderna e responsiva -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Configuração de fonte */
+        :root {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Estilo base do corpo para centralizar e aplicar fundo */
+        body {
+            background-color: #f3f4f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="w-full max-w-lg bg-white p-8 md:p-10 shadow-2xl rounded-xl border border-gray-100">
+    <!-- Título Principal (Nome da marca removido daqui) -->
+    <h1 class="text-3xl font-extrabold text-gray-900 mb-2 text-center">
+        Senha de Cálculo Horário
+    </h1>
+    <p class="text-gray-500 mb-8 text-center">
+        A senha é gerada automaticamente por um cálculo interno. Ela muda exatamente no início de cada hora.
+    </p>
+
+    <!-- Exibição da Data e Hora (A Semente) -->
+    <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-md">
+        <p class="text-sm font-medium text-blue-700">Valores Base (AAAA-MM-DD-HH):</p>
+        <p id="date-seed" class="text-xl font-mono text-blue-900 mt-1"></p>
+    </div>
+
+    <!-- Container da Senha -->
+    <div class="bg-gray-100 p-5 rounded-lg shadow-inner">
+        <label for="password-output" class="block text-sm font-medium text-gray-700 mb-2">
+            Senha Calculada
+        </label>
+        <div class="flex items-center space-x-3">
+            <!-- Campo de Senha -->
+            <input
+                type="text"
+                id="password-output"
+                readonly
+                class="flex-grow font-mono text-xl p-3 border border-gray-300 rounded-lg bg-white text-gray-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 cursor-pointer text-center"
+                value="Aguardando cálculo..."
+                onclick="copyPassword()"
+            />
+            <!-- Botão Copiar -->
+            <button
+                id="copy-button"
+                onclick="copyPassword()"
+                class="flex-shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition duration-200 active:scale-95 flex items-center space-x-2"
+                title="Copiar para a Área de Transferência"
+            >
+                <!-- Ícone de Cópia (lucide-react, simulado com SVG) -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                <span class="hidden sm:inline">Copiar</span>
+            </button>
+        </div>
+        <p id="copy-message" class="text-xs text-green-600 mt-2 opacity-0 transition-opacity duration-300"></p>
+    </div>
+
+    <!-- Rodapé/Informação Técnica (Mantido para atribuição) -->
+    <div class="mt-8 pt-4 border-t border-gray-200 text-xs text-gray-400 text-center">
+        <p>Desenvolvido por Murilo A. | Geração via JavaScript | Senha atualizada a cada hora cheia.</p>
+    </div>
+</div>
+
+<script>
+    // Elementos do DOM
+    const passwordOutput = document.getElementById('password-output');
+    const dateSeedDisplay = document.getElementById('date-seed');
+    const copyMessage = document.getElementById('copy-message');
+
+    /**
+     * Obtém os componentes de data e hora para o cálculo e a exibição.
+     * @returns {{seed: string, Y: number, M: number, D: number, H: number}}
+     */
+    function getHourlyComponents() {
+        const now = new Date();
+        // Obtém os componentes como números inteiros
+        const Y = now.getFullYear();
+        const M = now.getMonth() + 1; // Mês é 0-indexado, então adicionamos 1
+        const D = now.getDate();
+        const H = now.getHours(); // Hora (0-23)
+
+        // Para exibição (AAAA-MM-DD-HH), formatando com dois dígitos
+        const seed = `${Y}-${String(M).padStart(2, '0')}-${String(D).padStart(2, '0')}-${String(H).padStart(2, '0')}`;
+        
+        return { seed, Y, M, D, H };
+    }
+
+    /**
+     * Calcula a senha usando a fórmula customizada do usuário: Ano - (Mês + Dia + Hora).
+     * @param {number} Y Ano (YYYY)
+     * @param {number} M Mês (1-12)
+     * @param {number} D Dia (1-31)
+     * @param {number} H Hora (0-23)
+     * @returns {string} O resultado do cálculo como string.
+     */
+    function calculateCustomPassword(Y, M, D, H) {
+        // Implementando a fórmula: Ano - (Mês + Dia + Hora)
+        const sum = M + D + H;
+        const result = Y - sum;
+        
+        return String(result);
+    }
+
+    /**
+     * Gera e exibe a senha calculada.
+     */
+    function generateHourlyPassword() {
+        const components = getHourlyComponents();
+        
+        dateSeedDisplay.textContent = components.seed;
+
+        // Realiza o cálculo
+        const finalPassword = calculateCustomPassword(
+            components.Y, 
+            components.M, 
+            components.D, 
+            components.H
+        );
+        
+        passwordOutput.value = finalPassword;
+        console.log(`Senha calculada para ${components.seed}: ${finalPassword}`);
+
+        // Configura o próximo check de mudança de hora
+        scheduleNextUpdate();
+    }
+
+    /**
+     * Calcula o tempo até o início da próxima hora (HH:00:00)
+     * e agenda a próxima geração de senha.
+     * * Esta função garante que a atualização ocorra exatamente quando a hora vira.
+     */
+    function scheduleNextUpdate() {
+        const now = new Date();
+        const nextHour = new Date(now);
+        
+        // Define para o início da próxima hora (HH:00:00.000)
+        nextHour.setHours(now.getHours() + 1, 0, 0, 0); 
+        
+        // Calcula o atraso em milissegundos
+        let delay = nextHour.getTime() - now.getTime();
+        
+        // Adiciona um pequeno buffer de 100ms para garantir que a hora tenha mudado
+        // Isso evita erros de arredondamento ou de race condition do clock do sistema.
+        delay += 100; 
+
+        console.log(`Próxima atualização agendada para: ${new Date(now.getTime() + delay).toLocaleString()}`);
+
+        // Agenda a função para rodar no início da próxima hora
+        setTimeout(() => {
+            console.log("Reiniciando geração de senha (mudança de hora).");
+            generateHourlyPassword();
+        }, delay);
+    }
+
+    /**
+     * Copia a senha para a área de transferência e mostra uma mensagem de sucesso.
+     */
+    function copyPassword() {
+        passwordOutput.select();
+        passwordOutput.setSelectionRange(0, 99999); // Para mobile
+        
+        try {
+            // Usa execCommand('copy') como fallback seguro em alguns ambientes
+            document.execCommand('copy'); 
+            
+            copyMessage.textContent = 'Senha copiada com sucesso!';
+            copyMessage.classList.remove('opacity-0');
+            
+            setTimeout(() => {
+                copyMessage.classList.add('opacity-0');
+            }, 2000);
+        } catch (err) {
+            console.error('Falha ao copiar:', err);
+            copyMessage.textContent = 'Falha ao copiar a senha.';
+            copyMessage.classList.remove('opacity-0', 'text-green-600');
+            copyMessage.classList.add('text-red-600');
+            
+            setTimeout(() => {
+                copyMessage.classList.add('opacity-0');
+            }, 3000);
+        }
+    }
+
+    // Inicializa a geração da senha ao carregar a página
+    window.onload = generateHourlyPassword;
+
+</script>
+</body>
+</html>
