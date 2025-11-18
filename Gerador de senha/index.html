@@ -72,7 +72,7 @@
         <!-- 1. SENHA ATUAL (AUTOMÁTICA) -->
         <div class="border-b pb-6 border-gray-200">
             <p class="text-gray-500 mb-6 text-center text-sm">
-                Esta senha é gerada automaticamente para a hora atual. (Versão 24.9.1 ou superior)
+                Esta senha é gerada automaticamente para a hora atual.
             </p>
 
             <!-- Exibição da Data e Hora (A Semente) -->
@@ -84,7 +84,7 @@
             <!-- Container da Senha Atual -->
             <div class="bg-gray-100 p-5 rounded-lg shadow-inner">
                 <label for="password-output" class="block text-sm font-medium text-gray-700 mb-2">
-                    Senha Calculada (Principal)
+                    Senha (Versão 24.9.1 ou superior) - (Principal)
                 </label>
                 <div class="flex items-center space-x-3">
                     <input
@@ -114,13 +114,13 @@
                 Senha Antiga (-3)
             </h2>
             <p class="text-gray-600 mb-4 text-center text-sm">
-                Cálculo interno com <strong class="font-mono"> - 3 </strong> (Versão 24.8.9 ou inferior).
+                Cálculo interno com <strong class="font-mono"> - 3 </strong>.
             </p>
 
             <!-- Container da Senha Antiga -->
             <div class="bg-gray-100 p-5 rounded-lg shadow-inner">
                 <label for="historical-password-output" class="block text-sm font-medium text-gray-700 mb-2">
-                    Senha Antiga Calculada (Hora Atual -3)
+                    Senha (Versão 24.8.9 ou inferior) - (Hora Atual -3)
                 </label>
                 <div class="flex items-center space-x-3">
                     <input
@@ -150,7 +150,7 @@
     <!-- ======================================================= -->
     <div id="details-view" class="hidden space-y-8 pt-4">
         <h2 class="text-2xl font-bold text-gray-900 mb-4 text-center">
-            Detalhes da Fórmula e Logística
+            Detalhes da Fórmula
         </h2>
         
         <div class="space-y-6">
@@ -170,13 +170,13 @@
                 <p class="text-lg font-semibold text-green-800 mb-2">Fórmula da Senha Atual (Principal)</p>
                 <p class="text-sm text-gray-700 mb-2">A senha atual é calculada subtraindo a soma dos componentes de tempo do ano atual:</p>
                 <code class="block bg-white p-3 rounded font-mono text-base whitespace-pre-wrap text-green-900">
-                    SOMA = ( Mês + Dia + Hora ) <br>
-                    SENHA_ATUAL = Ano - SOMA
+                    SOMA = ( Ano - Mês - Dia + Hora ) <br>
+                    SENHA_ATUAL = soma
                 </code>
                 <p class="mt-2 text-xs text-gray-600">Exemplo: Se for 2025-11-18, 10h:</p>
                 <code class="block bg-white p-3 rounded font-mono text-xs whitespace-pre-wrap text-green-900">
-                    SOMA = ( 11 + 18 + 10 ) = 39 <br>
-                    SENHA_ATUAL = 2025 - 39 = 1986
+                    SOMA = ( 2025 - 11 - 18 - 10 ) = 1986 <br>
+                    SENHA_ATUAL = 1986
                 </code>
             </div>
 
@@ -185,9 +185,8 @@
                 <p class="text-lg font-semibold text-yellow-800 mb-2">Fórmula da Senha Antiga (-3)</p>
                 <p class="text-sm text-gray-700 mb-2">A senha antiga utiliza a mesma base, mas subtrai <strong class="font-mono">-3</strong> no resultado final:</p>
                 <code class="block bg-white p-3 rounded font-mono text-base whitespace-pre-wrap text-yellow-900">
-                    SOMA = ( Mês + Dia + Hora ) <br>
-                    BASE = Ano - SOMA <br>
-                    SENHA_ANTIGA = BASE - 3
+                    SOMA = (Ano - Mês - Dia - Hora ) = 1986 <br>
+                    SENHA_ANTIGA = 1986 - 3 = 1983
                 </code>
                  <p class="mt-2 text-xs text-gray-600">Exemplo: Se for 2025-11-18, 10h:</p>
                 <code class="block bg-white p-3 rounded font-mono text-xs whitespace-pre-wrap text-yellow-900">
@@ -199,7 +198,7 @@
 
             <!-- Logística de Atualização -->
             <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
-                <p class="text-lg font-semibold text-red-800 mb-2">Logística de Atualização</p>
+                <p class="text-lg font-semibold text-red-800 mb-2">Atualização da Senha</p>
                 <p class="text-sm text-gray-700">O sistema é programado para **atualizar a senha exatamente no início de cada hora** (HH:00:00). Um cronômetro interno calcula o tempo restante e gera uma nova senha assim que a hora muda, garantindo sincronia horária.</p>
             </div>
         </div>
