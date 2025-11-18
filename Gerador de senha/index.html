@@ -6,8 +6,6 @@
     <title>Gerador de Senha Pay</title>
     <!-- Carrega Tailwind CSS para estilização moderna e responsiva -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Inclui a biblioteca qrcode.js para gerar QR Codes -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <style>
         /* Configuração de fonte */
         :root {
@@ -25,25 +23,11 @@
         /* Ajuste de largura do container principal */
         .main-container {
             width: 100%;
-            max-width: 700px; /* Aumentado um pouco para acomodar 3 abas */
+            max-width: 650px; /* Levemente aumentado */
         }
         /* Efeito de hover nos botões de navegação */
         .nav-tab:not(.bg-indigo-600):hover {
             background-color: #e5e7eb;
-        }
-        /* Estilo para centralizar o QR Code */
-        #qrcode-output {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 1rem;
-            min-height: 250px;
-        }
-        /* Estilo base para o QR Code para garantir que ele seja visível */
-        #qrcode-output > canvas, #qrcode-output > img {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
@@ -53,15 +37,15 @@
 
     <!-- TÍTULO PRINCIPAL E NAVEGAÇÃO POR ABAS -->
     <h1 class="text-3xl font-extrabold text-gray-900 mb-6 text-center">
-        Ferramentas Auxiliares
+        Gerador de Senha Horária
     </h1>
 
     <nav class="flex rounded-lg bg-gray-200 p-1 shadow-inner" role="tablist">
-        <!-- Aba 1: Gerador de Senha -->
+        <!-- Aba 1: Gerador -->
         <button
             id="generator-tab"
             onclick="switchView('generator-view')"
-            class="nav-tab flex-1 py-3 px-2 text-sm font-semibold rounded-lg transition-all duration-200 focus:outline-none bg-indigo-600 text-white"
+            class="nav-tab flex-1 py-3 px-4 text-sm font-semibold rounded-lg transition-all duration-200 focus:outline-none bg-indigo-600 text-white"
             role="tab"
             aria-selected="true"
         >
@@ -71,21 +55,11 @@
         <button
             id="details-tab"
             onclick="switchView('details-view')"
-            class="nav-tab flex-1 py-3 px-2 text-sm font-semibold rounded-lg transition-all duration-200 focus:outline-none bg-gray-200 text-gray-800"
+            class="nav-tab flex-1 py-3 px-4 text-sm font-semibold rounded-lg transition-all duration-200 focus:outline-none bg-gray-200 text-gray-800"
             role="tab"
             aria-selected="false"
         >
             Detalhes da Fórmula
-        </button>
-        <!-- Aba 3: Gerador de QR Code (NOVO) -->
-        <button
-            id="qrcode-tab"
-            onclick="switchView('qrcode-view')"
-            class="nav-tab flex-1 py-3 px-2 text-sm font-semibold rounded-lg transition-all duration-200 focus:outline-none bg-gray-200 text-gray-800"
-            role="tab"
-            aria-selected="false"
-        >
-            Gerador de QR Code
         </button>
     </nav>
 
@@ -97,9 +71,6 @@
 
         <!-- 1. SENHA ATUAL (AUTOMÁTICA) -->
         <div class="border-b pb-6 border-gray-200">
-            <h2 class="text-xl font-bold text-gray-900 mb-4 text-center">
-                Gerador de Senha Horária (OTP)
-            </h2>
             <p class="text-gray-500 mb-6 text-center text-sm">
                 Esta senha é gerada automaticamente para a hora atual. (Versão 24.9.1 ou superior)
             </p>
@@ -175,7 +146,7 @@
     </div>
 
     <!-- ======================================================= -->
-    <!-- VIEW 2: DETALHES DA FÓRMULA (Oculto) -->
+    <!-- VIEW 2: DETALHES DA FÓRMULA (Inicialmente Oculto) -->
     <!-- ======================================================= -->
     <div id="details-view" class="hidden space-y-8 pt-4">
         <h2 class="text-2xl font-bold text-gray-900 mb-4 text-center">
@@ -211,8 +182,8 @@
 
             <!-- Senha Antiga (Versão 24.8.9 ou Inferior) -->
             <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg">
-                <p class="text-lg font-semibold text-yellow-800 mb-2">Fórmula da Senha Antiga (-3 Offset)</p>
-                <p class="text-sm text-gray-700 mb-2">A senha antiga utiliza a mesma base, mas subtrai um offset de <strong class="font-mono">-3</strong> no resultado final:</p>
+                <p class="text-lg font-semibold text-yellow-800 mb-2">Fórmula da Senha Antiga (-3)</p>
+                <p class="text-sm text-gray-700 mb-2">A senha antiga utiliza a mesma base, mas subtrai <strong class="font-mono">-3</strong> no resultado final:</p>
                 <code class="block bg-white p-3 rounded font-mono text-base whitespace-pre-wrap text-yellow-900">
                     SOMA = ( Mês + Dia + Hora ) <br>
                     BASE = Ano - SOMA <br>
@@ -234,69 +205,6 @@
         </div>
     </div>
     
-    <!-- ======================================================= -->
-    <!-- VIEW 3: GERADOR DE QR CODE (NOVO - Oculto) -->
-    <!-- ======================================================= -->
-    <div id="qrcode-view" class="hidden space-y-6 pt-4">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">
-            Gerador de QR Code (IPv4:Porta + Ref)
-        </h2>
-        
-        <div class="p-6 bg-gray-50 rounded-lg shadow-inner space-y-4">
-            <!-- Campos de Entrada -->
-            <div class="flex flex-col md:flex-row gap-4">
-                <div class="flex-1">
-                    <label for="ipv4-input" class="block text-sm font-medium text-gray-700 mb-1">Endereço IPv4 (Ex: 192.168.1.1)</label>
-                    <input
-                        type="text"
-                        id="ipv4-input"
-                        placeholder="Ex: 192.168.1.1"
-                        value="192.168.1.100"
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 font-mono"
-                    />
-                </div>
-                <div class="w-full md:w-1/4">
-                    <label for="port-input" class="block text-sm font-medium text-gray-700 mb-1">Porta (Ex: 8080)</label>
-                    <input
-                        type="number"
-                        id="port-input"
-                        placeholder="Ex: 8080"
-                        value="8080"
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 font-mono"
-                    />
-                </div>
-            </div>
-
-            <div>
-                <label for="reference-input" class="block text-sm font-medium text-gray-700 mb-1">Referência/Label</label>
-                <input
-                    type="text"
-                    id="reference-input"
-                    placeholder="Ex: Caixa01 ou Ref-001"
-                    value="Ref-001"
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                />
-            </div>
-
-            <!-- Botão de Geração -->
-            <button
-                onclick="generateQRCode()"
-                class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200 active:scale-95 flex items-center justify-center space-x-2"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-qr-code"><rect width="4" height="4" x="2" y="2" rx="1"/><path d="M7 2v4"/><path d="M2 7h4"/><rect width="4" height="4" x="14" y="2" rx="1"/><path d="M14 7h4"/><path d="M19 2v4"/><rect width="4" height="4" x="2" y="14" rx="1"/><path d="M7 14v4"/><path d="M2 19h4"/><path d="M14 14h.01"/><path d="M18 18h.01"/><path d="M18 22h.01"/><path d="M22 6h.01"/><rect width="4" height="4" x="18" y="18" rx="1"/></svg>
-                <span>Gerar QR Code</span>
-            </button>
-        </div>
-
-        <!-- Área de Saída do QR Code -->
-        <div id="qrcode-output" class="bg-white border border-gray-200 rounded-lg shadow-xl text-gray-500 text-center text-sm p-4">
-            Aguardando dados para gerar o QR Code...
-        </div>
-        
-        <p id="qr-data-output" class="text-sm font-mono text-gray-600 text-center break-all"></p>
-        <p id="qr-error-message" class="text-sm text-red-500 text-center hidden"></p>
-    </div>
-    
     <!-- Rodapé/Informação Técnica -->
     <div class="pt-4 border-t border-gray-200 text-xs text-gray-400 text-center">
         <p>Desenvolvido por Murilo A. | Geração via JavaScript | Senha atualizada a cada hora cheia.</p>
@@ -304,125 +212,159 @@
 </div>
 
 <script>
-    // =========================================================================
-    // VARIÁVEIS DE DOM E UTILITÁRIOS
-    // =========================================================================
+    // Elementos do DOM e Variáveis de Mensagem
     const passwordOutput = document.getElementById('password-output');
     const dateSeedDisplay = document.getElementById('date-seed');
     const historicalPasswordOutput = document.getElementById('historical-password-output');
-    
-    // Views e Tabs
     const generatorView = document.getElementById('generator-view');
     const detailsView = document.getElementById('details-view');
-    const qrcodeView = document.getElementById('qrcode-view'); 
     const generatorTab = document.getElementById('generator-tab');
     const detailsTab = document.getElementById('details-tab');
-    const qrcodeTab = document.getElementById('qrcode-tab'); 
 
-    // Variável para armazenar a instância do QR Code
-    let qrcodeInstance = null; 
-
-    // =========================================================================
-    // LÓGICA DE NAVEGAÇÃO
-    // =========================================================================
 
     /**
-     * Alterna a visualização entre as diferentes abas.
-     * @param {string} viewId O ID da view a ser exibida ('generator-view', 'details-view' ou 'qrcode-view').
+     * Alterna a visualização entre o Gerador de Senhas e os Detalhes da Fórmula.
+     * @param {string} viewId O ID da view a ser exibida ('generator-view' ou 'details-view').
      */
     function switchView(viewId) {
-        // Mapeamento de todas as views e tabs
-        const views = [
-            { id: 'generator-view', element: generatorView, tab: generatorTab },
-            { id: 'details-view', element: detailsView, tab: detailsTab },
-            { id: 'qrcode-view', element: qrcodeView, tab: qrcodeTab }
-        ];
-
-        views.forEach(view => {
-            const isActive = view.id === viewId;
-            // Alterna visibilidade da view
-            view.element.classList.toggle('hidden', !isActive);
+        if (viewId === 'generator-view') {
+            // Mostrar Gerador, Ocultar Detalhes
+            generatorView.classList.remove('hidden');
+            detailsView.classList.add('hidden');
             
-            // Alterna estilo da aba
-            view.tab.classList.toggle('bg-indigo-600', isActive);
-            view.tab.classList.toggle('text-white', isActive);
-            view.tab.classList.toggle('bg-gray-200', !isActive);
-            view.tab.classList.toggle('text-gray-800', !isActive);
-            view.tab.setAttribute('aria-selected', isActive);
-        });
-
-        // Se mudar para a aba QR Code, tentamos gerar um QR Code inicial ou limpar erros
-        if (viewId === 'qrcode-view') {
-            document.getElementById('qr-error-message').classList.add('hidden');
-            // Tenta gerar com os valores padrão ao abrir a aba pela primeira vez, se ainda não foi feito
-            if (!qrcodeInstance) {
-                generateQRCode();
-            }
+            // Ativar aba do Gerador, Desativar aba Detalhes
+            generatorTab.classList.add('bg-indigo-600', 'text-white');
+            generatorTab.classList.remove('bg-gray-200', 'text-gray-800');
+            detailsTab.classList.remove('bg-indigo-600', 'text-white');
+            detailsTab.classList.add('bg-gray-200', 'text-gray-800');
+        } else {
+            // Mostrar Detalhes, Ocultar Gerador
+            detailsView.classList.remove('hidden');
+            generatorView.classList.add('hidden');
+            
+            // Ativar aba Detalhes, Desativar aba Gerador
+            detailsTab.classList.add('bg-indigo-600', 'text-white');
+            detailsTab.classList.remove('bg-gray-200', 'text-gray-800');
+            generatorTab.classList.remove('bg-indigo-600', 'text-white');
+            generatorTab.classList.add('bg-gray-200', 'text-gray-800');
         }
     }
 
 
-    // =========================================================================
-    // LÓGICA DO GERADOR DE SENHAS (EXISTENTE)
-    // =========================================================================
-
+    /**
+     * Obtém os componentes de data e hora para o cálculo e a exibição.
+     * @returns {{seed: string, Y: number, M: number, D: number, H: number}}
+     */
     function getHourlyComponents() {
         const now = new Date();
+        // Obtém os componentes como números inteiros
         const Y = now.getFullYear();
-        const M = now.getMonth() + 1;
+        const M = now.getMonth() + 1; // Mês é 0-indexado, então adicionamos 1
         const D = now.getDate();
-        const H = now.getHours();
+        const H = now.getHours(); // Hora (0-23)
 
+        // Para exibição (AAAA-MM-DD-HH), formatando com dois dígitos
         const seed = `${Y}-${String(M).padStart(2, '0')}-${String(D).padStart(2, '0')}-${String(H).padStart(2, '0')}`;
         
         return { seed, Y, M, D, H };
     }
 
+    /**
+     * [FUNÇÃO 1] Calcula a senha usando a fórmula customizada: Ano - (Mês + Dia + Hora).
+     */
     function calculateCustomPassword(Y, M, D, H) {
         const sum = M + D + H;
         const result = Y - sum;
         return String(result);
     }
 
+    /**
+     * [FUNÇÃO 2] Calcula a senha antiga com o offset -3: (Ano - (Mês + Dia + Hora)) - 3.
+     */
     function calculateHistoricalPassword(Y, M, D, H) {
         const sum = M + D + H;
         const baseResult = Y - sum;
-        const finalResult = baseResult - 3;
+        const finalResult = baseResult - 3; // Offset -3
         return String(finalResult);
     }
     
+    // =========================================================================
+    // LÓGICA DO GERADOR GERAL (AUTOMÁTICO)
+    // =========================================================================
+
+    /**
+     * Gera e exibe as duas senhas calculadas para a hora atual.
+     */
     function generateHourlyPassword() {
         const components = getHourlyComponents();
         
         dateSeedDisplay.textContent = components.seed;
-        const currentPassword = calculateCustomPassword(components.Y, components.M, components.D, components.H);
-        passwordOutput.value = currentPassword;
-        const oldPassword = calculateHistoricalPassword(components.Y, components.M, components.D, components.H);
-        historicalPasswordOutput.value = oldPassword;
 
+        // --- Senha Atual (Sem Offset) ---
+        const currentPassword = calculateCustomPassword(
+            components.Y, 
+            components.M, 
+            components.D, 
+            components.H
+        );
+        passwordOutput.value = currentPassword;
+        console.log(`Senha atual calculada para ${components.seed}: ${currentPassword}`);
+
+        // --- Senha Antiga (Com Offset -3) ---
+        const oldPassword = calculateHistoricalPassword(
+            components.Y, 
+            components.M, 
+            components.D, 
+            components.H
+        );
+        historicalPasswordOutput.value = oldPassword;
+        console.log(`Senha antiga (-3) calculada para ${components.seed}: ${oldPassword}`);
+
+        // Configura o próximo check de mudança de hora
         scheduleNextUpdate();
     }
     
+    /**
+     * Calcula o tempo até o início da próxima hora (HH:00:00)
+     * e agenda a próxima geração de senha.
+     */
     function scheduleNextUpdate() {
         const now = new Date();
         const nextHour = new Date(now);
+        
+        // Define para o início da próxima hora (HH:00:00.000)
         nextHour.setHours(now.getHours() + 1, 0, 0, 0); 
         
+        // Calcula o atraso em milissegundos
         let delay = nextHour.getTime() - now.getTime();
+        
+        // Adiciona um pequeno buffer de 100ms
         delay += 100; 
 
+        console.log(`Próxima atualização agendada para: ${new Date(now.getTime() + delay).toLocaleString()}`);
+
+        // Agenda a função para rodar no início da próxima hora
         setTimeout(() => {
+            console.log("Reiniciando geração de senha (mudança de hora).");
             generateHourlyPassword();
         }, delay);
     }
 
+    // =========================================================================
+    // FUNÇÃO DE COPIAR
+    // =========================================================================
+
+    /**
+     * Copia a senha de um campo específico para a área de transferência e mostra uma mensagem.
+     * @param {string} elementId O ID do input (campo de senha) a ser copiado.
+     */
     function copyPassword(elementId) {
         const inputElement = document.getElementById(elementId);
         let messageElementId = elementId.includes('historical') ? 'copy-message-historical' : 'copy-message-current';
         const copyMessageElement = document.getElementById(messageElementId);
         
         inputElement.select();
-        inputElement.setSelectionRange(0, 99999);
+        inputElement.setSelectionRange(0, 99999); // Para mobile
         
         try {
             document.execCommand('copy'); 
@@ -435,6 +377,7 @@
                 copyMessageElement.classList.add('opacity-0');
             }, 2000);
         } catch (err) {
+            console.error('Falha ao copiar:', err);
             copyMessageElement.textContent = 'Falha ao copiar a senha.';
             copyMessageElement.classList.remove('opacity-0', 'text-green-600');
             copyMessageElement.classList.add('text-red-600');
@@ -445,110 +388,10 @@
         }
     }
 
-
-    // =========================================================================
-    // LÓGICA DO GERADOR DE QR CODE (NOVA)
-    // =========================================================================
-
-    /**
-     * Valida um endereço IPv4 básico.
-     * @param {string} ip O endereço IP a ser validado.
-     * @returns {boolean} True se for um IPv4 válido.
-     */
-    function isValidIpv4(ip) {
-        const ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-        return ipv4Regex.test(ip);
-    }
-
-    /**
-     * Gera o QR Code com base nos inputs de IPv4, Porta e Referência.
-     */
-    function generateQRCode() {
-        const ipv4Input = document.getElementById('ipv4-input');
-        const portInput = document.getElementById('port-input');
-        const referenceInput = document.getElementById('reference-input');
-        const outputElement = document.getElementById('qrcode-output');
-        const dataOutput = document.getElementById('qr-data-output');
-        const errorElement = document.getElementById('qr-error-message');
-
-        const ipv4 = ipv4Input.value.trim();
-        const port = portInput.value.trim();
-        const reference = referenceInput.value.trim();
-        
-        // Validação
-        if (!isValidIpv4(ipv4)) {
-            errorElement.textContent = 'Erro: O endereço IPv4 é inválido.';
-            errorElement.classList.remove('hidden');
-            outputElement.innerHTML = '<p class="text-red-500">Preencha o IPv4 corretamente.</p>';
-            dataOutput.textContent = '';
-            return;
-        }
-
-        if (!port || isNaN(parseInt(port)) || parseInt(port) <= 0 || parseInt(port) > 65535) {
-            errorElement.textContent = 'Erro: A porta deve ser um número válido (1-65535).';
-            errorElement.classList.remove('hidden');
-            outputElement.innerHTML = '<p class="text-red-500">Preencha a porta corretamente.</p>';
-            dataOutput.textContent = '';
-            return;
-        }
-
-        if (!reference) {
-            errorElement.textContent = 'Erro: O campo Referência/Label não pode estar vazio.';
-            errorElement.classList.remove('hidden');
-            outputElement.innerHTML = '<p class="text-red-500">Preencha a referência.</p>';
-            dataOutput.textContent = '';
-            return;
-        }
-
-        // Se a validação passar, esconde a mensagem de erro
-        errorElement.classList.add('hidden');
-        
-        // Monta a string no formato desejado: IPV4:PORTA/REFERENCIA
-        const qrData = `${ipv4}:${port}/${reference}`;
-        dataOutput.textContent = `Conteúdo do QR Code: ${qrData}`;
-        
-        // Limpa a área de saída antes de gerar um novo QR Code
-        outputElement.innerHTML = '';
-        
-        // Destrói a instância anterior se existir
-        if (qrcodeInstance) {
-            // qrcode.js não tem um método 'destroy', mas limpamos o DOM
-            qrcodeInstance = null;
-        }
-
-        // Cria uma nova instância do QR Code
-        try {
-            qrcodeInstance = new QRCode(outputElement, {
-                text: qrData,
-                width: 200,
-                height: 200,
-                colorDark : "#000000",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
-            });
-        } catch (e) {
-            errorElement.textContent = 'Erro interno ao gerar o QR Code.';
-            errorElement.classList.remove('hidden');
-            outputElement.innerHTML = '';
-            console.error("QRCode generation error:", e);
-        }
-    }
-
-
-    // =========================================================================
-    // INICIALIZAÇÃO
-    // =========================================================================
-
+    // Inicializa: Mostra a aba Gerador e inicia a geração da senha
     window.onload = () => {
-        // Inicializa na aba Gerador de Senhas
         switchView('generator-view');
-        // Inicia a geração da senha e agendamento da próxima atualização
         generateHourlyPassword();
-
-        // Adiciona listeners para gerar QR Code dinamicamente ao digitar
-        document.getElementById('ipv4-input').addEventListener('input', generateQRCode);
-        document.getElementById('port-input').addEventListener('input', generateQRCode);
-        document.getElementById('reference-input').addEventListener('input', generateQRCode);
     };
 
 </script>
