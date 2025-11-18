@@ -170,7 +170,7 @@
                 <p class="text-lg font-semibold text-green-800 mb-2">Fórmula da Senha Atual (Principal)</p>
                 <p class="text-sm text-gray-700 mb-2">A senha atual é calculada subtraindo a soma dos componentes de tempo do ano atual:</p>
                 <code class="block bg-white p-3 rounded font-mono text-base whitespace-pre-wrap text-green-900">
-                    SOMA = ( Ano - Mês - Dia + Hora ) <br>
+                    SOMA = ( Ano - Mês - Dia - Hora ) <br>
                     SENHA_ATUAL = soma
                 </code>
                 <p class="mt-2 text-xs text-gray-600">Exemplo: Se for 2025-11-18, 10h:</p>
@@ -191,8 +191,8 @@
                 </code>
                  <p class="mt-2 text-xs text-gray-600">Exemplo: Se for 2025-11-18, 10h:</p>
                 <code class="block bg-white p-3 rounded font-mono text-xs whitespace-pre-wrap text-yellow-900">
-                    SOMA = ( 11 + 18 + 10 ) = 39 <br>
-                    BASE = 2025 - 39 = 1986 <br>
+                    SOMA = (2025 - 11 - 18 - 10 ) <br>
+                    Resultado = 1986 <br>
                     SENHA_ANTIGA = 1986 - 3 = 1983
                 </code>
             </div>
