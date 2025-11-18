@@ -20,66 +20,143 @@
             min-height: 100vh;
             padding: 1rem;
         }
+        /* Ajuste de largura do container principal */
+        .main-container {
+            width: 100%;
+            max-width: 600px; /* Aumentado para acomodar os dois geradores */
+        }
     </style>
 </head>
 <body>
 
-<div class="w-full max-w-lg bg-white p-8 md:p-10 shadow-2xl rounded-xl border border-gray-100">
-    <!-- Título Principal (Nome da marca removido daqui) -->
-    <h1 class="text-3xl font-extrabold text-gray-900 mb-2 text-center">
-        Senha de Cálculo Horário
-    </h1>
-    <p class="text-gray-500 mb-8 text-center">
-        A senha é gerada automaticamente por um cálculo interno. Ela muda exatamente no início de cada hora.
-    </p>
+<div class="main-container bg-white p-8 md:p-10 shadow-2xl rounded-xl border border-gray-100 space-y-8">
 
-    <!-- Exibição da Data e Hora (A Semente) -->
-    <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-md">
-        <p class="text-sm font-medium text-blue-700">Valores Base (AAAA-MM-DD-HH):</p>
-        <p id="date-seed" class="text-xl font-mono text-blue-900 mt-1"></p>
+    <!-- 1. GERADOR DE SENHA ATUAL (AUTOMÁTICO) -->
+    <div class="border-b pb-6 border-gray-200">
+        <!-- Título Principal -->
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-2 text-center">
+            Senha de Cálculo Horário
+        </h1>
+        <p class="text-gray-500 mb-6 text-center">
+            Esta senha é gerada automaticamente para a hora atual e é atualizada a cada 60 minutos.
+        </p>
+
+        <!-- Exibição da Data e Hora (A Semente) -->
+        <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-md">
+            <p class="text-sm font-medium text-blue-700">Valores Base (AAAA-MM-DD-HH) - HORA ATUAL:</p>
+            <p id="date-seed" class="text-xl font-mono text-blue-900 mt-1"></p>
+        </div>
+
+        <!-- Container da Senha Atual -->
+        <div class="bg-gray-100 p-5 rounded-lg shadow-inner">
+            <label for="password-output" class="block text-sm font-medium text-gray-700 mb-2">
+                Senha Calculada (Hora Atual)
+            </label>
+            <div class="flex items-center space-x-3">
+                <!-- Campo de Senha -->
+                <input
+                    type="text"
+                    id="password-output"
+                    readonly
+                    class="flex-grow font-mono text-xl p-3 border border-gray-300 rounded-lg bg-white text-gray-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 cursor-pointer text-center"
+                    value="Aguardando cálculo..."
+                    onclick="copyPassword('password-output')"
+                />
+                <!-- Botão Copiar -->
+                <button
+                    onclick="copyPassword('password-output')"
+                    class="flex-shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition duration-200 active:scale-95 flex items-center space-x-2"
+                    title="Copiar para a Área de Transferência"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                    <span class="hidden sm:inline">Copiar</span>
+                </button>
+            </div>
+            <p id="copy-message-current" class="text-xs text-green-600 mt-2 opacity-0 transition-opacity duration-300"></p>
+        </div>
     </div>
 
-    <!-- Container da Senha -->
-    <div class="bg-gray-100 p-5 rounded-lg shadow-inner">
-        <label for="password-output" class="block text-sm font-medium text-gray-700 mb-2">
-            Senha Calculada
-        </label>
-        <div class="flex items-center space-x-3">
-            <!-- Campo de Senha -->
-            <input
-                type="text"
-                id="password-output"
-                readonly
-                class="flex-grow font-mono text-xl p-3 border border-gray-300 rounded-lg bg-white text-gray-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 cursor-pointer text-center"
-                value="Aguardando cálculo..."
-                onclick="copyPassword()"
-            />
-            <!-- Botão Copiar -->
-            <button
-                id="copy-button"
-                onclick="copyPassword()"
-                class="flex-shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition duration-200 active:scale-95 flex items-center space-x-2"
-                title="Copiar para a Área de Transferência"
-            >
-                <!-- Ícone de Cópia (lucide-react, simulado com SVG) -->
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-                <span class="hidden sm:inline">Copiar</span>
-            </button>
+    <!-- 2. GERADOR DE SENHA ANTIGA (+3 OFFSET) -->
+    <div class="pt-4 border-t border-gray-200">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4 text-center">
+            Gerador de Senha Antiga (+3)
+        </h2>
+        <p class="text-gray-600 mb-4 text-center text-sm">
+            Use este campo para gerar senhas de datas e horas passadas. É utilizado o cálculo interno + 3.
+        </p>
+
+        <!-- Campos de Input -->
+        <div class="grid grid-cols-4 gap-2 mb-4">
+            <div>
+                <label for="input-year" class="block text-xs font-medium text-gray-500">Ano (AAAA)</label>
+                <input type="number" id="input-year" class="w-full p-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-center" placeholder="Ex: 2025" min="2000" max="2100" value="2025">
+            </div>
+            <div>
+                <label for="input-month" class="block text-xs font-medium text-gray-500">Mês (MM)</label>
+                <input type="number" id="input-month" class="w-full p-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-center" placeholder="Ex: 11" min="1" max="12" value="11">
+            </div>
+            <div>
+                <label for="input-day" class="block text-xs font-medium text-gray-500">Dia (DD)</label>
+                <input type="number" id="input-day" class="w-full p-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-center" placeholder="Ex: 17" min="1" max="31" value="17">
+            </div>
+            <div>
+                <label for="input-hour" class="block text-xs font-medium text-gray-500">Hora (HH)</label>
+                <input type="number" id="input-hour" class="w-full p-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-center" placeholder="Ex: 13" min="0" max="23" value="13">
+            </div>
         </div>
-        <p id="copy-message" class="text-xs text-green-600 mt-2 opacity-0 transition-opacity duration-300"></p>
+
+        <!-- Botão Calcular -->
+        <button
+            onclick="generateHistoricalPassword()"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition duration-200 active:scale-95 flex items-center justify-center space-x-2 mb-4"
+        >
+            Calcular Senha Antiga
+        </button>
+
+        <!-- Container da Senha Antiga -->
+        <div class="bg-gray-100 p-5 rounded-lg shadow-inner">
+            <label for="historical-password-output" class="block text-sm font-medium text-gray-700 mb-2">
+                Resultado do Cálculo Antigo (+3 Offset)
+            </label>
+            <div class="flex items-center space-x-3">
+                <input
+                    type="text"
+                    id="historical-password-output"
+                    readonly
+                    class="flex-grow font-mono text-xl p-3 border border-gray-300 rounded-lg bg-white text-gray-800 text-center"
+                    value="Calcule uma data..."
+                    onclick="copyPassword('historical-password-output')"
+                />
+                <button
+                    onclick="copyPassword('historical-password-output')"
+                    class="flex-shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition duration-200 active:scale-95 flex items-center space-x-2"
+                    title="Copiar para a Área de Transferência"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                    <span class="hidden sm:inline">Copiar</span>
+                </button>
+            </div>
+            <p id="copy-message-historical" class="text-xs text-green-600 mt-2 opacity-0 transition-opacity duration-300"></p>
+        </div>
     </div>
 
     <!-- Rodapé/Informação Técnica (Mantido para atribuição) -->
-    <div class="mt-8 pt-4 border-t border-gray-200 text-xs text-gray-400 text-center">
+    <div class="pt-4 border-t border-gray-200 text-xs text-gray-400 text-center">
         <p>Desenvolvido por Murilo A. | Geração via JavaScript | Senha atualizada a cada hora cheia.</p>
     </div>
 </div>
 
 <script>
-    // Elementos do DOM
+    // Elementos do DOM e Variáveis de Mensagem
     const passwordOutput = document.getElementById('password-output');
     const dateSeedDisplay = document.getElementById('date-seed');
-    const copyMessage = document.getElementById('copy-message');
+    const historicalPasswordOutput = document.getElementById('historical-password-output');
+    
+    // Inputs Antigos
+    const inputYear = document.getElementById('input-year');
+    const inputMonth = document.getElementById('input-month');
+    const inputDay = document.getElementById('input-day');
+    const inputHour = document.getElementById('input-hour');
 
     /**
      * Obtém os componentes de data e hora para o cálculo e a exibição.
@@ -100,7 +177,8 @@
     }
 
     /**
-     * Calcula a senha usando a fórmula customizada do usuário: Ano - (Mês + Dia + Hora).
+     * [FUNÇÃO 1] Calcula a senha usando a fórmula customizada: Ano - (Mês + Dia + Hora).
+     * Esta é usada para a senha ATUAL, sem offset.
      * @param {number} Y Ano (YYYY)
      * @param {number} M Mês (1-12)
      * @param {number} D Dia (1-31)
@@ -108,7 +186,7 @@
      * @returns {string} O resultado do cálculo como string.
      */
     function calculateCustomPassword(Y, M, D, H) {
-        // Implementando a fórmula: Ano - (Mês + Dia + Hora)
+        // Fórmula original: Ano - (Mês + Dia + Hora)
         const sum = M + D + H;
         const result = Y - sum;
         
@@ -116,14 +194,35 @@
     }
 
     /**
-     * Gera e exibe a senha calculada.
+     * [FUNÇÃO 2] Calcula a senha antiga com o offset +3: (Ano - (Mês + Dia + Hora)) + 3.
+     * @param {number} Y Ano (YYYY)
+     * @param {number} M Mês (1-12)
+     * @param {number} D Dia (1-31)
+     * @param {number} H Hora (0-23)
+     * @returns {string} O resultado do cálculo como string.
+     */
+    function calculateHistoricalPassword(Y, M, D, H) {
+        // Fórmula solicitada: (Ano - (Mês + Dia + Hora)) + 3
+        const sum = M + D + H;
+        const baseResult = Y - sum;
+        const finalResult = baseResult + 3; // Adiciona o offset +3
+        
+        return String(finalResult);
+    }
+    
+    // =========================================================================
+    // LÓGICA DO GERADOR ATUAL (AUTOMÁTICO)
+    // =========================================================================
+
+    /**
+     * Gera e exibe a senha calculada para a hora atual.
      */
     function generateHourlyPassword() {
         const components = getHourlyComponents();
         
         dateSeedDisplay.textContent = components.seed;
 
-        // Realiza o cálculo
+        // Realiza o cálculo sem offset
         const finalPassword = calculateCustomPassword(
             components.Y, 
             components.M, 
@@ -132,7 +231,7 @@
         );
         
         passwordOutput.value = finalPassword;
-        console.log(`Senha calculada para ${components.seed}: ${finalPassword}`);
+        console.log(`Senha atual calculada para ${components.seed}: ${finalPassword}`);
 
         // Configura o próximo check de mudança de hora
         scheduleNextUpdate();
@@ -141,7 +240,6 @@
     /**
      * Calcula o tempo até o início da próxima hora (HH:00:00)
      * e agenda a próxima geração de senha.
-     * * Esta função garante que a atualização ocorra exatamente quando a hora vira.
      */
     function scheduleNextUpdate() {
         const now = new Date();
@@ -153,8 +251,7 @@
         // Calcula o atraso em milissegundos
         let delay = nextHour.getTime() - now.getTime();
         
-        // Adiciona um pequeno buffer de 100ms para garantir que a hora tenha mudado
-        // Isso evita erros de arredondamento ou de race condition do clock do sistema.
+        // Adiciona um pequeno buffer de 100ms
         delay += 100; 
 
         console.log(`Próxima atualização agendada para: ${new Date(now.getTime() + delay).toLocaleString()}`);
@@ -165,37 +262,73 @@
             generateHourlyPassword();
         }, delay);
     }
+    
+    // =========================================================================
+    // LÓGICA DO GERADOR ANTIGO (MANUAL)
+    // =========================================================================
 
     /**
-     * Copia a senha para a área de transferência e mostra uma mensagem de sucesso.
+     * Gera e exibe a senha calculada para a data inserida pelo usuário.
      */
-    function copyPassword() {
-        passwordOutput.select();
-        passwordOutput.setSelectionRange(0, 99999); // Para mobile
+    function generateHistoricalPassword() {
+        // Obtém os valores dos inputs e converte para número
+        const Y = parseInt(inputYear.value);
+        const M = parseInt(inputMonth.value);
+        const D = parseInt(inputDay.value);
+        const H = parseInt(inputHour.value);
+        
+        // Validação simples
+        if (isNaN(Y) || isNaN(M) || isNaN(D) || isNaN(H) || M < 1 || M > 12 || D < 1 || D > 31 || H < 0 || H > 23) {
+            historicalPasswordOutput.value = "Dados Inválidos!";
+            return;
+        }
+
+        // Realiza o cálculo com offset +3
+        const finalPassword = calculateHistoricalPassword(Y, M, D, H);
+        
+        historicalPasswordOutput.value = finalPassword;
+        console.log(`Senha antiga calculada para ${Y}-${M}-${D}-${H}: ${finalPassword}`);
+    }
+
+    // =========================================================================
+    // FUNÇÃO DE COPIAR (COMPARTILHADA)
+    // =========================================================================
+
+    /**
+     * Copia a senha de um campo específico para a área de transferência e mostra uma mensagem.
+     * @param {string} elementId O ID do input (campo de senha) a ser copiado.
+     */
+    function copyPassword(elementId) {
+        const inputElement = document.getElementById(elementId);
+        let messageElementId = elementId.includes('historical') ? 'copy-message-historical' : 'copy-message-current';
+        const copyMessageElement = document.getElementById(messageElementId);
+        
+        inputElement.select();
+        inputElement.setSelectionRange(0, 99999); // Para mobile
         
         try {
-            // Usa execCommand('copy') como fallback seguro em alguns ambientes
             document.execCommand('copy'); 
             
-            copyMessage.textContent = 'Senha copiada com sucesso!';
-            copyMessage.classList.remove('opacity-0');
+            copyMessageElement.textContent = 'Senha copiada com sucesso!';
+            copyMessageElement.classList.remove('opacity-0', 'text-red-600');
+            copyMessageElement.classList.add('text-green-600');
             
             setTimeout(() => {
-                copyMessage.classList.add('opacity-0');
+                copyMessageElement.classList.add('opacity-0');
             }, 2000);
         } catch (err) {
             console.error('Falha ao copiar:', err);
-            copyMessage.textContent = 'Falha ao copiar a senha.';
-            copyMessage.classList.remove('opacity-0', 'text-green-600');
-            copyMessage.classList.add('text-red-600');
+            copyMessageElement.textContent = 'Falha ao copiar a senha.';
+            copyMessageElement.classList.remove('opacity-0', 'text-green-600');
+            copyMessageElement.classList.add('text-red-600');
             
             setTimeout(() => {
-                copyMessage.classList.add('opacity-0');
+                copyMessageElement.classList.add('opacity-0');
             }, 3000);
         }
     }
 
-    // Inicializa a geração da senha ao carregar a página
+    // Inicializa a geração da senha atual ao carregar a página
     window.onload = generateHourlyPassword;
 
 </script>
