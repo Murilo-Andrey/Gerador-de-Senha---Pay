@@ -16,14 +16,18 @@
             background-color: #f3f4f6;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start; /* Alinhamento superior em telas pequenas */
             min-height: 100vh;
             padding: 1rem;
         }
         /* Ajuste de largura do container principal */
         .main-container {
             width: 100%;
-            max-width: 600px; /* Aumentado para acomodar os dois geradores */
+            max-width: 650px; /* Levemente aumentado */
+        }
+        /* Efeito de hover nos botões de navegação */
+        .nav-tab:not(.bg-indigo-600):hover {
+            background-color: #e5e7eb;
         }
     </style>
 </head>
@@ -31,88 +35,177 @@
 
 <div class="main-container bg-white p-8 md:p-10 shadow-2xl rounded-xl border border-gray-100 space-y-8">
 
-    <!-- 1. GERADOR DE SENHA ATUAL (AUTOMÁTICO) -->
-    <div class="border-b pb-6 border-gray-200">
-        <!-- Título Principal -->
-        <h1 class="text-3xl font-extrabold text-gray-900 mb-2 text-center">
-            Senha de Cálculo Horário
-        </h1>
-        <p class="text-gray-500 mb-6 text-center">
-            Esta senha é gerada automaticamente para a hora atual e é atualizada a cada 60 minutos. - (Da versão 24.9.1 ou superior)
-        </p>
+    <!-- TÍTULO PRINCIPAL E NAVEGAÇÃO POR ABAS -->
+    <h1 class="text-3xl font-extrabold text-gray-900 mb-6 text-center">
+        Gerador de Senha Horária
+    </h1>
 
-        <!-- Exibição da Data e Hora (A Semente) -->
-        <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-md">
-            <p class="text-sm font-medium text-blue-700">Valores Base (AAAA-MM-DD-HH) - HORA ATUAL:</p>
-            <p id="date-seed" class="text-xl font-mono text-blue-900 mt-1"></p>
+    <nav class="flex rounded-lg bg-gray-200 p-1 shadow-inner" role="tablist">
+        <!-- Aba 1: Gerador -->
+        <button
+            id="generator-tab"
+            onclick="switchView('generator-view')"
+            class="nav-tab flex-1 py-3 px-4 text-sm font-semibold rounded-lg transition-all duration-200 focus:outline-none bg-indigo-600 text-white"
+            role="tab"
+            aria-selected="true"
+        >
+            Gerador de Senhas
+        </button>
+        <!-- Aba 2: Detalhes da Fórmula -->
+        <button
+            id="details-tab"
+            onclick="switchView('details-view')"
+            class="nav-tab flex-1 py-3 px-4 text-sm font-semibold rounded-lg transition-all duration-200 focus:outline-none bg-gray-200 text-gray-800"
+            role="tab"
+            aria-selected="false"
+        >
+            Detalhes da Fórmula
+        </button>
+    </nav>
+
+
+    <!-- ======================================================= -->
+    <!-- VIEW 1: GERADOR DE SENHAS (Inicialmente Visível) -->
+    <!-- ======================================================= -->
+    <div id="generator-view" class="space-y-8 pt-4">
+
+        <!-- 1. SENHA ATUAL (AUTOMÁTICA) -->
+        <div class="border-b pb-6 border-gray-200">
+            <p class="text-gray-500 mb-6 text-center text-sm">
+                Esta senha é gerada automaticamente para a hora atual. (Versão 24.9.1 ou superior)
+            </p>
+
+            <!-- Exibição da Data e Hora (A Semente) -->
+            <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-md">
+                <p class="text-sm font-medium text-blue-700">Valores Base (AAAA-MM-DD-HH):</p>
+                <p id="date-seed" class="text-xl font-mono text-blue-900 mt-1"></p>
+            </div>
+
+            <!-- Container da Senha Atual -->
+            <div class="bg-gray-100 p-5 rounded-lg shadow-inner">
+                <label for="password-output" class="block text-sm font-medium text-gray-700 mb-2">
+                    Senha Calculada (Principal)
+                </label>
+                <div class="flex items-center space-x-3">
+                    <input
+                        type="text"
+                        id="password-output"
+                        readonly
+                        class="flex-grow font-mono text-xl p-3 border border-gray-300 rounded-lg bg-white text-gray-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 cursor-pointer text-center"
+                        value="Aguardando cálculo..."
+                        onclick="copyPassword('password-output')"
+                    />
+                    <button
+                        onclick="copyPassword('password-output')"
+                        class="flex-shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition duration-200 active:scale-95 flex items-center space-x-2"
+                        title="Copiar para a Área de Transferência"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                        <span class="hidden sm:inline">Copiar</span>
+                    </button>
+                </div>
+                <p id="copy-message-current" class="text-xs text-green-600 mt-2 opacity-0 transition-opacity duration-300"></p>
+            </div>
         </div>
 
-        <!-- Container da Senha Atual -->
-        <div class="bg-gray-100 p-5 rounded-lg shadow-inner">
-            <label for="password-output" class="block text-sm font-medium text-gray-700 mb-2">
-                Senha Calculada (Hora Atual)
-            </label>
-            <div class="flex items-center space-x-3">
-                <!-- Campo de Senha -->
-                <input
-                    type="text"
-                    id="password-output"
-                    readonly
-                    class="flex-grow font-mono text-xl p-3 border border-gray-300 rounded-lg bg-white text-gray-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 cursor-pointer text-center"
-                    value="Aguardando cálculo..."
-                    onclick="copyPassword('password-output')"
-                />
-                <!-- Botão Copiar -->
-                <button
-                    onclick="copyPassword('password-output')"
-                    class="flex-shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition duration-200 active:scale-95 flex items-center space-x-2"
-                    title="Copiar para a Área de Transferência"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-                    <span class="hidden sm:inline">Copiar</span>
-                </button>
+        <!-- 2. SENHA ANTIGA (-3 OFFSET) -->
+        <div class="pt-4">
+            <h2 class="text-xl font-bold text-gray-900 mb-4 text-center">
+                Senha Antiga (-3 Offset)
+            </h2>
+            <p class="text-gray-600 mb-4 text-center text-sm">
+                Cálculo interno com <strong class="font-mono"> - 3 </strong> (Versão 24.8.9 ou inferior).
+            </p>
+
+            <!-- Container da Senha Antiga -->
+            <div class="bg-gray-100 p-5 rounded-lg shadow-inner">
+                <label for="historical-password-output" class="block text-sm font-medium text-gray-700 mb-2">
+                    Senha Antiga Calculada (Hora Atual -3)
+                </label>
+                <div class="flex items-center space-x-3">
+                    <input
+                        type="text"
+                        id="historical-password-output"
+                        readonly
+                        class="flex-grow font-mono text-xl p-3 border border-gray-300 rounded-lg bg-white text-gray-800 text-center"
+                        value="Aguardando cálculo..."
+                        onclick="copyPassword('historical-password-output')"
+                    />
+                    <button
+                        onclick="copyPassword('historical-password-output')"
+                        class="flex-shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition duration-200 active:scale-95 flex items-center space-x-2"
+                        title="Copiar para a Área de Transferência"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                        <span class="hidden sm:inline">Copiar</span>
+                    </button>
+                </div>
+                <p id="copy-message-historical" class="text-xs text-green-600 mt-2 opacity-0 transition-opacity duration-300"></p>
             </div>
-            <p id="copy-message-current" class="text-xs text-green-600 mt-2 opacity-0 transition-opacity duration-300"></p>
         </div>
     </div>
 
-    <!-- 2. GERADOR DE SENHA ANTIGA (-3 OFFSET) - AGORA AUTOMÁTICO -->
-    <div class="pt-4 border-t border-gray-200">
+    <!-- ======================================================= -->
+    <!-- VIEW 2: DETALHES DA FÓRMULA (Inicialmente Oculto) -->
+    <!-- ======================================================= -->
+    <div id="details-view" class="hidden space-y-8 pt-4">
         <h2 class="text-2xl font-bold text-gray-900 mb-4 text-center">
-            Gerador de Senha Antiga (-3)
+            Detalhes da Fórmula e Logística
         </h2>
-        <p class="text-gray-600 mb-4 text-center text-sm">
-            Esta senha é calculada automaticamente para a hora atual, utilizando o cálculo interno <strong class="font-mono"> - 3 - (Versão 24.8.9 ou inferior)</strong>.
-        </p>
-
-        <!-- Container da Senha Antiga -->
-        <div class="bg-gray-100 p-5 rounded-lg shadow-inner">
-            <label for="historical-password-output" class="block text-sm font-medium text-gray-700 mb-2">
-                Senha Antiga Calculada (Hora Atual -3)
-            </label>
-            <div class="flex items-center space-x-3">
-                <input
-                    type="text"
-                    id="historical-password-output"
-                    readonly
-                    class="flex-grow font-mono text-xl p-3 border border-gray-300 rounded-lg bg-white text-gray-800 text-center"
-                    value="Aguardando cálculo..."
-                    onclick="copyPassword('historical-password-output')"
-                />
-                <button
-                    onclick="copyPassword('historical-password-output')"
-                    class="flex-shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition duration-200 active:scale-95 flex items-center space-x-2"
-                    title="Copiar para a Área de Transferência"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-                    <span class="hidden sm:inline">Copiar</span>
-                </button>
+        
+        <div class="space-y-6">
+            <!-- Componentes Base -->
+            <div class="bg-purple-50 border-l-4 border-purple-500 p-4 rounded-lg">
+                <p class="text-lg font-semibold text-purple-800 mb-2">Componentes de Tempo Usados:</p>
+                <ul class="list-disc list-inside space-y-1 text-sm text-gray-700 font-mono">
+                    <li><strong class="text-purple-900">Ano:</strong> O ano atual (ex: 2025)</li>
+                    <li><strong class="text-purple-900">Mês:</strong> O número do mês atual (ex: 1 a 12)</li>
+                    <li><strong class="text-purple-900">Dia:</strong> O número do dia do mês (ex: 1 a 31)</li>
+                    <li><strong class="text-purple-900">Hora:</strong> A hora atual em formato 24h (ex: 0 a 23)</li>
+                </ul>
             </div>
-            <p id="copy-message-historical" class="text-xs text-green-600 mt-2 opacity-0 transition-opacity duration-300"></p>
+
+            <!-- Senha Atual (Versão 24.9.1 ou Superior) -->
+            <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg">
+                <p class="text-lg font-semibold text-green-800 mb-2">Fórmula da Senha Atual (Principal)</p>
+                <p class="text-sm text-gray-700 mb-2">A senha atual é calculada subtraindo a soma dos componentes de tempo do ano atual:</p>
+                <code class="block bg-white p-3 rounded font-mono text-base whitespace-pre-wrap text-green-900">
+                    SOMA = ( Mês + Dia + Hora ) <br>
+                    SENHA_ATUAL = Ano - SOMA
+                </code>
+                <p class="mt-2 text-xs text-gray-600">Exemplo: Se for 2025-11-18, 10h:</p>
+                <code class="block bg-white p-3 rounded font-mono text-xs whitespace-pre-wrap text-green-900">
+                    SOMA = ( 11 + 18 + 10 ) = 39 <br>
+                    SENHA_ATUAL = 2025 - 39 = 1986
+                </code>
+            </div>
+
+            <!-- Senha Antiga (Versão 24.8.9 ou Inferior) -->
+            <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg">
+                <p class="text-lg font-semibold text-yellow-800 mb-2">Fórmula da Senha Antiga (-3 Offset)</p>
+                <p class="text-sm text-gray-700 mb-2">A senha antiga utiliza a mesma base, mas subtrai um offset de <strong class="font-mono">-3</strong> no resultado final:</p>
+                <code class="block bg-white p-3 rounded font-mono text-base whitespace-pre-wrap text-yellow-900">
+                    SOMA = ( Mês + Dia + Hora ) <br>
+                    BASE = Ano - SOMA <br>
+                    SENHA_ANTIGA = BASE - 3
+                </code>
+                 <p class="mt-2 text-xs text-gray-600">Exemplo: Se for 2025-11-18, 10h:</p>
+                <code class="block bg-white p-3 rounded font-mono text-xs whitespace-pre-wrap text-yellow-900">
+                    SOMA = ( 11 + 18 + 10 ) = 39 <br>
+                    BASE = 2025 - 39 = 1986 <br>
+                    SENHA_ANTIGA = 1986 - 3 = 1983
+                </code>
+            </div>
+
+            <!-- Logística de Atualização -->
+            <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
+                <p class="text-lg font-semibold text-red-800 mb-2">Logística de Atualização</p>
+                <p class="text-sm text-gray-700">O sistema é programado para **atualizar a senha exatamente no início de cada hora** (HH:00:00). Um cronômetro interno calcula o tempo restante e gera uma nova senha assim que a hora muda, garantindo sincronia horária.</p>
+            </div>
         </div>
     </div>
-
-    <!-- Rodapé/Informação Técnica (Mantido para atribuição) -->
+    
+    <!-- Rodapé/Informação Técnica -->
     <div class="pt-4 border-t border-gray-200 text-xs text-gray-400 text-center">
         <p>Desenvolvido por Murilo A. | Geração via JavaScript | Senha atualizada a cada hora cheia.</p>
     </div>
@@ -123,8 +216,40 @@
     const passwordOutput = document.getElementById('password-output');
     const dateSeedDisplay = document.getElementById('date-seed');
     const historicalPasswordOutput = document.getElementById('historical-password-output');
-    
-    // As referências aos inputs manuais foram removidas.
+    const generatorView = document.getElementById('generator-view');
+    const detailsView = document.getElementById('details-view');
+    const generatorTab = document.getElementById('generator-tab');
+    const detailsTab = document.getElementById('details-tab');
+
+
+    /**
+     * Alterna a visualização entre o Gerador de Senhas e os Detalhes da Fórmula.
+     * @param {string} viewId O ID da view a ser exibida ('generator-view' ou 'details-view').
+     */
+    function switchView(viewId) {
+        if (viewId === 'generator-view') {
+            // Mostrar Gerador, Ocultar Detalhes
+            generatorView.classList.remove('hidden');
+            detailsView.classList.add('hidden');
+            
+            // Ativar aba do Gerador, Desativar aba Detalhes
+            generatorTab.classList.add('bg-indigo-600', 'text-white');
+            generatorTab.classList.remove('bg-gray-200', 'text-gray-800');
+            detailsTab.classList.remove('bg-indigo-600', 'text-white');
+            detailsTab.classList.add('bg-gray-200', 'text-gray-800');
+        } else {
+            // Mostrar Detalhes, Ocultar Gerador
+            detailsView.classList.remove('hidden');
+            generatorView.classList.add('hidden');
+            
+            // Ativar aba Detalhes, Desativar aba Gerador
+            detailsTab.classList.add('bg-indigo-600', 'text-white');
+            detailsTab.classList.remove('bg-gray-200', 'text-gray-800');
+            generatorTab.classList.remove('bg-indigo-600', 'text-white');
+            generatorTab.classList.add('bg-gray-200', 'text-gray-800');
+        }
+    }
+
 
     /**
      * Obtém os componentes de data e hora para o cálculo e a exibição.
@@ -146,35 +271,20 @@
 
     /**
      * [FUNÇÃO 1] Calcula a senha usando a fórmula customizada: Ano - (Mês + Dia + Hora).
-     * Esta é usada para a senha ATUAL, sem offset.
-     * @param {number} Y Ano (YYYY)
-     * @param {number} M Mês (1-12)
-     * @param {number} D Dia (1-31)
-     * @param {number} H Hora (0-23)
-     * @returns {string} O resultado do cálculo como string.
      */
     function calculateCustomPassword(Y, M, D, H) {
-        // Fórmula original: Ano - (Mês + Dia + Hora)
         const sum = M + D + H;
         const result = Y - sum;
-        
         return String(result);
     }
 
     /**
      * [FUNÇÃO 2] Calcula a senha antiga com o offset -3: (Ano - (Mês + Dia + Hora)) - 3.
-     * @param {number} Y Ano (YYYY)
-     * @param {number} M Mês (1-12)
-     * @param {number} D Dia (1-31)
-     * @param {number} H Hora (0-23)
-     * @returns {string} O resultado do cálculo como string.
      */
     function calculateHistoricalPassword(Y, M, D, H) {
-        // Fórmula solicitada: (Ano - (Mês + Dia + Hora)) - 3
         const sum = M + D + H;
         const baseResult = Y - sum;
-        const finalResult = baseResult - 3; // O offset agora é -3
-        
+        const finalResult = baseResult - 3; // Offset -3
         return String(finalResult);
     }
     
@@ -183,7 +293,7 @@
     // =========================================================================
 
     /**
-     * Gera e exibe as duas senhas calculadas para a hora atual (com e sem offset).
+     * Gera e exibe as duas senhas calculadas para a hora atual.
      */
     function generateHourlyPassword() {
         const components = getHourlyComponents();
@@ -214,9 +324,6 @@
         scheduleNextUpdate();
     }
     
-    // A função generateHistoricalPassword manual foi removida por ser obsoleta.
-
-
     /**
      * Calcula o tempo até o início da próxima hora (HH:00:00)
      * e agenda a próxima geração de senha.
@@ -244,7 +351,7 @@
     }
 
     // =========================================================================
-    // FUNÇÃO DE COPIAR (COMPARTILHADA)
+    // FUNÇÃO DE COPIAR
     // =========================================================================
 
     /**
@@ -281,8 +388,11 @@
         }
     }
 
-    // Inicializa a geração da senha atual ao carregar a página
-    window.onload = generateHourlyPassword;
+    // Inicializa: Mostra a aba Gerador e inicia a geração da senha
+    window.onload = () => {
+        switchView('generator-view');
+        generateHourlyPassword();
+    };
 
 </script>
 </body>
